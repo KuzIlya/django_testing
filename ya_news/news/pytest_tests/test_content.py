@@ -2,16 +2,20 @@ import pytest
 from django.urls import reverse
 from django.conf import settings
 
+from news.forms import CommentForm
+
 pytestmark = pytest.mark.django_db
+
+HOME_PAGE_ROUTE = reverse('news:home')
 
 
 @pytest.mark.usefixtures('make_bulk_of_news')
 def test_news_count(client):
-    url = reverse('news:home')
+    url = HOME_PAGE_ROUTE
     res = client.get(url)
-    object_list = res.context['object_list']
-    comments_count = len(object_list)
-    msg = (f'На главной странице должно находиться не больше '
+    news = res.context['object_list']
+    comments_count = len(news)
+    msg = ('На главной странице должно находиться не больше '
            f'{settings.NEWS_COUNT_ON_HOME_PAGE} новостей,'
            f' выведено {comments_count}')
     assert comments_count == settings.NEWS_COUNT_ON_HOME_PAGE, msg
@@ -22,31 +26,32 @@ def test_news_count(client):
                                (pytest.lazy_fixture('client'), False))
 )
 def test_comment_form_availability_for_different_users(
-        pk_from_news, username, is_permitted):
-    url = reverse('news:detail', args=pk_from_news)
+        pk_from_news, username, is_permitted, news_detail_route):
+    url = news_detail_route
     res = username.get(url)
-    result = 'form' in res.context
-    assert result == is_permitted
+    assert 'form' in res.context
+    if is_permitted:
+        assert isinstance(res.context['form'], CommentForm)
 
 
 @pytest.mark.usefixtures('make_bulk_of_news')
 def test_news_order(client):
-    url = reverse('news:home')
+    url = HOME_PAGE_ROUTE
     res = client.get(url)
     object_list = res.context['object_list']
     sorted_list_of_news = sorted(object_list,
                                  key=lambda news: news.date,
                                  reverse=True)
     for as_is, to_be in zip(object_list, sorted_list_of_news):
-        assert as_is.date == to_be.date, (f'Должна быть первой в списке'
+        assert as_is.date == to_be.date, ('Должна быть первой в списке'
                                           f' новость "{to_be.title}" с датой'
                                           f' {to_be.date}, получена'
                                           f' "{as_is.title}" {as_is.date}')
 
 
 @pytest.mark.usefixtures('make_bulk_of_comments')
-def test_comments_order(client, pk_from_news):
-    url = reverse('news:detail', args=pk_from_news)
+def test_comments_order(client, pk_from_news, news_detail_route):
+    url = news_detail_route
     res = client.get(url)
     object_list = res.context['news'].comment_set.all()
     sorted_list_of_comments = sorted(object_list,

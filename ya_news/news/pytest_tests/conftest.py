@@ -1,9 +1,19 @@
 from datetime import datetime, timedelta
 
 import pytest
+
 from django.conf import settings
+from django.urls import reverse
 from django.utils import timezone
-from news.models import News, Comment
+
+from news.models import Comment, News
+
+DETAIL_ROUTE = 'news:detail'
+
+
+@pytest.fixture
+def news_detail_route(pk_from_news):
+    return reverse(DETAIL_ROUTE, args=pk_from_news)
 
 
 @pytest.fixture

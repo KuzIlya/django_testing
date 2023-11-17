@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from notes.models import Note
@@ -22,6 +22,12 @@ class TestRoutes(TestCase):
             author=cls.author,
         )
 
+        cls.author_client = Client()
+        cls.author_client.force_login(cls.author)
+
+        cls.reader_client = Client()
+        cls.reader_client.force_login(cls.reader)
+
     def test_pages_availability_for_anonymous_user(self):
         urls = (
             'notes:home',
@@ -41,7 +47,6 @@ class TestRoutes(TestCase):
             'notes:success',
             'notes:add',
         )
-        self.client.force_login(self.author)
         for page in urls:
             with self.subTest(page=page):
                 url = reverse(page)
@@ -54,7 +59,6 @@ class TestRoutes(TestCase):
             (self.reader, HTTPStatus.NOT_FOUND),
         )
         for user, status in users_statuses:
-            self.client.force_login(user)
             for page in ('notes:detail', 'notes:edit', 'notes:delete'):
                 with self.subTest(user=user.username, page=page):
                     url = reverse(page, args=[self.note.slug])
