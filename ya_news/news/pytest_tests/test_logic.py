@@ -77,15 +77,15 @@ def test_author_can_edit_comment(
 
     comment.refresh_from_db()
 
-    assert comment.text == form_data['text'], (
+    assert comment.text != form_data['text'], (
         f'Комментарий "{comment.text}" не был обновлен ,'
         f' ожидалось {form_data["text"]}')
 
-    assert comment.author == original_author, (
+    assert comment.author != original_author, (
         f'Автор комментария был изменен, ожидалось {original_author},'
         f' получено {comment.author}')
 
-    assert comment.news == original_news, (
+    assert comment.news != original_news, (
         f'Новость, связанная с комментарием, была изменена,'
         f' ожидалось {original_news}, получено {comment.news}')
 

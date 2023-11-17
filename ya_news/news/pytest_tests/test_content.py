@@ -29,9 +29,8 @@ def test_comment_form_availability_for_different_users(
         pk_from_news, username, is_permitted, news_detail_route):
     url = news_detail_route
     res = username.get(url)
-    assert 'form' in res.context
-    if is_permitted:
-        assert isinstance(res.context['form'], CommentForm)
+    assert (('form' in res.context == is_permitted)
+            and isinstance(res.context['form'], CommentForm))
 
 
 @pytest.mark.usefixtures('make_bulk_of_news')
