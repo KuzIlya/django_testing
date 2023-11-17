@@ -81,13 +81,15 @@ def test_author_can_edit_comment(
         f'Комментарий "{comment.text}" не был обновлен ,'
         f' ожидалось {form_data["text"]}')
 
-    assert comment.author != original_author, (
-        f'Автор комментария был изменен, ожидалось {original_author},'
-        f' получено {comment.author}')
+    assert comment.author == original_author, (
+        f'Автор комментария "{comment.author}" был обновлен, '
+        f'ожидался {original_author}'
+    )
 
-    assert comment.news != original_news, (
-        f'Новость, связанная с комментарием, была изменена,'
-        f' ожидалось {original_news}, получено {comment.news}')
+    assert comment.news == original_news, (
+        f'Новость комментария "{comment.news}" была обновлена, '
+        f'ожидалась {original_news}'
+    )
 
 
 def test_author_can_delete_comment(
@@ -104,8 +106,10 @@ def test_author_can_delete_comment(
 
 
 def test_other_user_cant_edit_comment(
-        admin_client, pk_from_news, comment, form_data):
+        admin_client, pk_from_news, comment, form_data
+):
     url = reverse('news:edit', args=[comment.pk])
+
     old_comment = comment.text
     old_comment_author = comment.author
     old_comment_news = comment.news
