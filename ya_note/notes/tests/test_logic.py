@@ -14,25 +14,28 @@ User = get_user_model()
 
 class TestNoteCreation(TestCase):
     ADD_NOTE_URL = reverse('notes:add')
-    SUCCESS_URL = reverse('notes:success')
+    NOTES_SUCCESS_URL = reverse('notes:success')
 
     @classmethod
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Лев Толстой')
+        cls.author_client = Client()
+        cls.author_client.force_login(cls.author)
+
         cls.form_data = {'title': 'Form title',
                          'text': 'Form text',
                          'slug': 'form-slug'}
-
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
 
     @staticmethod
     def _get_err_msg(current, expected):
         return f'Текущее значение "{current}", Ожидалось "{expected}"'
 
     def test_user_can_create_note(self):
-        response = self.client.post(self.ADD_NOTE_URL, data=self.form_data)
-        self.assertRedirects(response, self.SUCCESS_URL)
+        response = self.author_client.post(
+            self.ADD_NOTE_URL,
+            data=self.form_data
+        )
+        self.assertRedirects(response, self.NOTES_SUCCESS_URL)
         expected_notes_count = 1
         current_notes_count = Note.objects.count()
         self.assertEqual(current_notes_count, expected_notes_count,
@@ -57,16 +60,18 @@ class TestNoteCreation(TestCase):
                                            expected_notes_count))
 
     def test_slug_must_be_unique(self):
+        self.client.force_login(self.author)
         self.client.post(self.ADD_NOTE_URL, data=self.form_data)
         res = self.client.post(self.ADD_NOTE_URL, data=self.form_data)
         warn = self.form_data['slug'] + WARNING
         self.assertFormError(res, form='form', field='slug', errors=warn)
 
     def test_empty_slug(self):
+        self.client.force_login(self.author)
         del self.form_data['slug']
         res = self.client.post(self.ADD_NOTE_URL,
                                data=self.form_data)
-        self.assertRedirects(res, self.SUCCESS_URL)
+        self.assertRedirects(res, self.NOTES_SUCCESS_URL)
         expected_notes_count = 1
         current_notes_count = Note.objects.count()
         self.assertEqual(current_notes_count, expected_notes_count,

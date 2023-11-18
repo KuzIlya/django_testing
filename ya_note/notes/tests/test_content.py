@@ -9,7 +9,6 @@ User = get_user_model()
 
 
 class TestContent(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Лев Толстой')
@@ -27,17 +26,20 @@ class TestContent(TestCase):
         cls.reader_client = Client()
         cls.reader_client.force_login(cls.reader)
 
-    def test_notes_list_for_different_users(self):
-        users_notes = (
-            (self.author, True),
-            (self.reader, False),
+        cls.users_notes = (
+            (cls.author, True),
+            (cls.reader, False),
         )
+
+    def test_notes_list_for_different_users(self):
         url = reverse('notes:list')
-        for user, note_in_list in users_notes:
+        for user, note_in_list in self.users_notes:
             with self.subTest(user=user.username, note_in_list=note_in_list):
-                response = self.client.get(url)
+                response = (self.author_client.get(url) if user == self.author
+                            else self.reader_client.get(url))
                 note_in_object_list = self.note in response.context[
-                    'object_list']
+                    'object_list'
+                ]
                 self.assertEqual(note_in_object_list, note_in_list)
 
     def test_pages_contains_form(self):
@@ -48,7 +50,6 @@ class TestContent(TestCase):
         for page, args in urls:
             with self.subTest(page=page):
                 url = reverse(page, args=args)
-                response = self.client.get(url)
+                response = self.author_client.get(url)
                 self.assertIn('form', response.context)
-                form_instance = response.context['form']
-                self.assertIsInstance(form_instance, NoteForm)
+                self.assertIsInstance(response.context['form'], NoteForm)

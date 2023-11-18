@@ -50,7 +50,7 @@ class TestRoutes(TestCase):
         for page in urls:
             with self.subTest(page=page):
                 url = reverse(page)
-                response = self.client.get(url)
+                response = self.author_client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_availability_for_notes_create_edit_and_delete(self):
@@ -62,7 +62,9 @@ class TestRoutes(TestCase):
             for page in ('notes:detail', 'notes:edit', 'notes:delete'):
                 with self.subTest(user=user.username, page=page):
                     url = reverse(page, args=[self.note.slug])
-                    response = self.client.get(url)
+                    response = (self.author_client.get(url)
+                                if user == self.author
+                                else self.reader_client.get(url))
                     self.assertEqual(response.status_code, status)
 
     def test_redirect_for_anonymous_client(self):

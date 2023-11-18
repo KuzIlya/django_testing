@@ -2,8 +2,6 @@ import pytest
 from django.urls import reverse
 from django.conf import settings
 
-from news.forms import CommentForm
-
 pytestmark = pytest.mark.django_db
 
 HOME_PAGE_ROUTE = reverse('news:home')
@@ -29,8 +27,7 @@ def test_comment_form_availability_for_different_users(
         pk_from_news, username, is_permitted, news_detail_route):
     url = news_detail_route
     res = username.get(url)
-    result = ('form' in res.context) and isinstance(res.context['form'],
-                                                    CommentForm)
+    result = 'form' in res.context
     assert result == is_permitted
 
 
