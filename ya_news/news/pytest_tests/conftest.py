@@ -9,11 +9,23 @@ from django.utils import timezone
 from news.models import Comment, News
 
 DETAIL_ROUTE = 'news:detail'
+DELETE_ROUTE = 'news:delete'
+EDIT_ROUTE = 'news:edit'
 
 
 @pytest.fixture
 def news_detail_route(pk_from_news):
     return reverse(DETAIL_ROUTE, args=pk_from_news)
+
+
+@pytest.fixture
+def news_delete_route(pk_from_comment):
+    return reverse(DELETE_ROUTE, args=pk_from_comment)
+
+
+@pytest.fixture
+def news_edit_route(pk_from_comment):
+    return reverse(EDIT_ROUTE, args=pk_from_comment)
 
 
 @pytest.fixture

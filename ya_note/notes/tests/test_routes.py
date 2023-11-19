@@ -55,16 +55,14 @@ class TestRoutes(TestCase):
 
     def test_availability_for_notes_create_edit_and_delete(self):
         users_statuses = (
-            (self.author, HTTPStatus.OK),
-            (self.reader, HTTPStatus.NOT_FOUND),
+            (self.author_client, HTTPStatus.OK),
+            (self.reader_client, HTTPStatus.NOT_FOUND),
         )
         for user, status in users_statuses:
             for page in ('notes:detail', 'notes:edit', 'notes:delete'):
-                with self.subTest(user=user.username, page=page):
+                with self.subTest(page=page):
                     url = reverse(page, args=[self.note.slug])
-                    response = (self.author_client.get(url)
-                                if user == self.author
-                                else self.reader_client.get(url))
+                    response = user.get(url)
                     self.assertEqual(response.status_code, status)
 
     def test_redirect_for_anonymous_client(self):

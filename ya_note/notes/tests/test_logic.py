@@ -3,11 +3,10 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
-
-from notes.models import Note
-from notes.forms import WARNING
-
 from pytils.translit import slugify
+
+from notes.forms import WARNING
+from notes.models import Note
 
 User = get_user_model()
 
@@ -41,7 +40,7 @@ class TestNoteCreation(TestCase):
         self.assertEqual(current_notes_count, expected_notes_count,
                          self._get_err_msg(current_notes_count,
                                            expected_notes_count))
-        new_note = Note.objects.filter(slug=self.form_data['slug']).last()
+        new_note = Note.objects.last()
         self.assertIsNotNone(new_note)
         self.assertEqual(new_note.title, self.form_data['title'])
         self.assertEqual(new_note.text, self.form_data['text'])
@@ -78,7 +77,7 @@ class TestNoteCreation(TestCase):
                          self._get_err_msg(current_notes_count,
                                            expected_notes_count))
         expected_slug = slugify(self.form_data['title'])
-        new_note = Note.objects.filter(slug=expected_slug).last()
+        new_note = Note.objects.last()
         self.assertIsNotNone(new_note)
         self.assertEqual(new_note.slug, expected_slug,
                          self._get_err_msg(new_note.slug,

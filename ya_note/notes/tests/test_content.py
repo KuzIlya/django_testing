@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from notes.models import Note
 from notes.forms import NoteForm
+from notes.models import Note
 
 User = get_user_model()
 
@@ -27,16 +27,14 @@ class TestContent(TestCase):
         cls.reader_client.force_login(cls.reader)
 
         cls.users_notes = (
-            (cls.author, True),
-            (cls.reader, False),
+            (cls.author_client, True),
+            (cls.reader_client, False),
         )
 
     def test_notes_list_for_different_users(self):
-        url = reverse('notes:list')
         for user, note_in_list in self.users_notes:
-            with self.subTest(user=user.username, note_in_list=note_in_list):
-                response = (self.author_client.get(url) if user == self.author
-                            else self.reader_client.get(url))
+            with self.subTest(note_in_list=note_in_list):
+                response = user.get(reverse('notes:list'))
                 note_in_object_list = self.note in response.context[
                     'object_list'
                 ]
